@@ -35,12 +35,16 @@ var defaultHandlerTmpl = `
 	</body>
 </html>`
 
-func NewHandler(s Story) http.Handler {
-	return handler{s}
+func NewHandler(s Story, t *template.Template) http.Handler {
+	if t == nil {
+		t = tpl
+	}
+	return handler{s, t}
 }
 
 type handler struct {
 	s Story
+	t *template.Template
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +55,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path = path[1:]
 
 	if chapter, ok := h.s[path]; ok {
-		err := tpl.Execute(w, h.s["intro"])
+		err := tpl.Execute(w, chapter)
 		if err != nil {
 			// log the error to logger, only visible to dev
 			log.Printf("%v", err)
